@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cloudinary 3D Viewer with Loader + Transition</title>
+
+<!-- Cloudinary scripts -->
+<script src="https://dimensions-3d-viewer.cloudinary.com/1.0.16/all.js"></script>
+<script src="https://dimensions-tag.cloudinary.com/0.0.105/all.js"></script>
+
+<style>
+  /* Reset */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; width: 100%; font-family: Arial, sans-serif; }
+
+  /* Loader overlay */
+  #loaderOverlay {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #0b0b0b;
+    z-index: 9999;
+  }
+  .spinner {
+    width: 70.4px; height: 70.4px;
+    --clr: rgb(247, 197, 159);
+    --clr-alpha: rgba(247, 197, 159, 0.1);
+    animation: spinner 1.6s infinite ease;
+    transform-style: preserve-3d;
+  }
+  .spinner > div {
+    background-color: var(--clr-alpha);
+    height: 100%; width: 100%;
+    position: absolute;
+    border: 3.5px solid var(--clr);
+  }
+  .spinner div:nth-of-type(1) { transform: translateZ(-35.2px) rotateY(180deg); }
+  .spinner div:nth-of-type(2) { transform: rotateY(-270deg) translateX(50%); transform-origin: top right; }
+  .spinner div:nth-of-type(3) { transform: rotateY(270deg) translateX(-50%); transform-origin: center left; }
+  .spinner div:nth-of-type(4) { transform: rotateX(90deg) translateY(-50%); transform-origin: top center; }
+  .spinner div:nth-of-type(5) { transform: rotateX(-90deg) translateY(50%); transform-origin: bottom center; }
+  .spinner div:nth-of-type(6) { transform: translateZ(35.2px); }
+  @keyframes spinner {
+    0% { transform: rotate(45deg) rotateX(-25deg) rotateY(25deg); }
+    50% { transform: rotate(45deg) rotateX(-385deg) rotateY(25deg); }
+    100% { transform: rotate(45deg) rotateX(-385deg) rotateY(385deg); }
+  }
+
+  /* Cinematic wipe */
+  #wipe {
+    position: fixed;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: white;
+    z-index: 9998;
+    transform-origin: bottom center;
+    transform: scaleY(0);
+    transition: transform 0.6s cubic-bezier(.2,.9,.2,1), opacity 0.45s ease;
+    pointer-events: none;
+  }
+  #wipe.active { transform: scaleY(1); }
+  #wipe.reveal { transform-origin: top center; transform: scaleY(0); opacity: 0; }
+
+  /* Viewer container */
+  #viewerWrap {
+    height: 100%;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  #viewerWrap.visible {
+    visibility: visible;
+    opacity: 1;
+  }
+</style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="loaderOverlay">
+  <div class="spinner">
+    <div></div><div></div><div></div>
+    <div></div><div></div><div></div>
+  </div>
+</div>
+
+<!-- Cinematic wipe -->
+<div id="wipe"></div>
+
+<!-- 3D viewer -->
+<div id="viewerWrap">
+  <label>3D Viewer (Cloudinary)</label>
+  <div
+    id="three-d-viewer"
+    style="height: 400px"
+    data-d8s-type="3d"
+    data-d8s-id="01_rngaps-16-2-2025">
+  </div>
+</div>
+
+<script>
+  // Init Cloudinary 3D tag
+  const d8sApi = initDimensions({
+    cloudName: "dm2gubxod",
+    viewers: ["3D"],
+  });
+
+  // Wait for Cloudinary viewer to load
+  document.getElementById('three-d-viewer')
+    .addEventListener('load', () => {
+      revealScene();
+    });
+
+  // Fallback: reveal after 10s if no event
+  setTimeout(() => revealScene(), 10000);
+
+  async function revealScene(){
+    // Play wipe in
+    document.getElementById('wipe').classList.add('active');
+    await wait(400);
+    // Show viewer
+    document.getElementById('viewerWrap').classList.add('visible');
+    // Wipe out
+    document.getElementById('wipe').classList.add('reveal');
+    await wait(600);
+    // Hide loader
+    document.getElementById('loaderOverlay').style.display = 'none';
+    document.getElementById('wipe').style.display = 'none';
+  }
+  function wait(ms){ return new Promise(res => setTimeout(res, ms)); }
+</script>
+</body>
+</html>
