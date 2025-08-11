@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Cloudinary 3D Viewer with Loader + Transition</title>
+<title>Cloudinary 3D Viewer with Cinematic Loader</title>
 
 <!-- Cloudinary scripts -->
 <script src="https://dimensions-3d-viewer.cloudinary.com/1.0.16/all.js"></script>
@@ -12,7 +12,7 @@
 <style>
   /* Reset */
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { height: 100%; width: 100%; font-family: Arial, sans-serif; }
+  html, body { height: 100%; width: 100%; font-family: Arial, sans-serif; background: black; }
 
   /* Loader overlay */
   #loaderOverlay {
@@ -64,6 +64,7 @@
   /* Viewer container */
   #viewerWrap {
     height: 100%;
+    width: 100%;
     visibility: hidden;
     opacity: 0;
     transition: opacity 0.6s ease;
@@ -71,6 +72,10 @@
   #viewerWrap.visible {
     visibility: visible;
     opacity: 1;
+  }
+  #three-d-viewer {
+    height: 100%;
+    width: 100%;
   }
 </style>
 </head>
@@ -89,10 +94,8 @@
 
 <!-- 3D viewer -->
 <div id="viewerWrap">
-  <label>3D Viewer (Cloudinary)</label>
   <div
     id="three-d-viewer"
-    style="height: 400px"
     data-d8s-type="3d"
     data-d8s-id="01_rngaps-16-2-2025">
   </div>
@@ -105,28 +108,35 @@
     viewers: ["3D"],
   });
 
-  // Wait for Cloudinary viewer to load
-  document.getElementById('three-d-viewer')
-    .addEventListener('load', () => {
-      revealScene();
-    });
+  // Detect when the model finishes loading
+  const viewerElement = document.getElementById('three-d-viewer');
+  viewerElement.addEventListener('d8s-viewer-ready', () => {
+    revealScene();
+  });
 
-  // Fallback: reveal after 10s if no event
+  // Fallback after 10 seconds
   setTimeout(() => revealScene(), 10000);
 
   async function revealScene(){
+    if (window.sceneRevealed) return;
+    window.sceneRevealed = true;
+
     // Play wipe in
     document.getElementById('wipe').classList.add('active');
     await wait(400);
+
     // Show viewer
     document.getElementById('viewerWrap').classList.add('visible');
+
     // Wipe out
     document.getElementById('wipe').classList.add('reveal');
     await wait(600);
+
     // Hide loader
     document.getElementById('loaderOverlay').style.display = 'none';
     document.getElementById('wipe').style.display = 'none';
   }
+
   function wait(ms){ return new Promise(res => setTimeout(res, ms)); }
 </script>
 </body>
